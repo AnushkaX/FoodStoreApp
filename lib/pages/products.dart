@@ -35,7 +35,7 @@ class ProductsPage extends StatelessWidget {
       //Creates the page
       drawer: _buildSideDrawer(context),
       appBar: AppBar(
-        title: Text("Anushka's App"),
+        title: Text("Food Store App"),
         actions: <Widget>[
           IconButton(icon: Icon(Icons.favorite), onPressed: () {}, color: Colors.red,),
         ],

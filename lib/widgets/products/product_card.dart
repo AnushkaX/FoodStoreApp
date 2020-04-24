@@ -40,8 +40,7 @@ class ProductCard extends StatelessWidget {
                 //iconSize: ,
                 //child: Text('Details'))
               ),
-              SizedBox(height: 10.0),
-              
+              SizedBox(height: 10.0),            
               IconButton(
                 onPressed: () => Navigator.pushNamed<bool>(
                     context, '/product/' + productIndex.toString()
