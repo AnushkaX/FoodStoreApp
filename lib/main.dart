@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(context) {
     var materialApp = MaterialApp(
       theme: ThemeData(
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           primarySwatch: Colors.teal,
           accentColor: Colors.grey,
           buttonColor: Colors.black,

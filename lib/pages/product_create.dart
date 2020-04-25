@@ -12,59 +12,78 @@ class ProductCreatePage extends StatefulWidget {
 }
 
 class _ProductCreatPageState extends State<ProductCreatePage> {
-  String _titleValue = '';
-  String _descriptionValue = '';
-  double _priceValue;
+  final Map<String, dynamic> _formData = {
+    'title': null,
+    'description': null,
+    'price': null,
+    'image': 'assets/img.JPG',
+  };
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); //working with forms
 
   Widget _buildTitleTextField() {
-    return TextField(
+    return TextFormField(
+      //autovalidate: true,
+      validator: (String value) {
+        //working with forms
+        if (value.isEmpty || value.length < 5) {
+          return "Title Required and should be 5 characters long!";
+        }
+      },
       decoration: InputDecoration(
         labelText: "Product Title",
       ),
-      onChanged: (String value) {
-        setState(() {
-          _titleValue = value;
-        });
+      onSaved: (String value) {
+        _formData['title'] = value;
       },
     );
   }
 
   Widget _buildTitleDescriptionField() {
-    return TextField(
+    return TextFormField(
+      validator: (String value) {
+        //working with forms
+        if (value.isEmpty || value.length < 10) {
+          return "Description is Required and should be 10+ characters long!";
+        }
+      },
       decoration: InputDecoration(
         labelText: "Product Description",
       ),
       maxLines: 4,
-      onChanged: (String value) {
-        setState(() {
-          _descriptionValue = value;
-        });
+      onSaved: (String value) {
+        _formData['description'] = value;
       },
     );
   }
 
   Widget _buildTitlePriceField() {
-    return TextField(
+    return TextFormField(
+      validator: (String value) {
+        //working with forms
+        if (value.isEmpty ||
+            !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
+          return "Price Required and should be a number!";
+        }
+      },
       decoration: InputDecoration(
         labelText: "Product Price",
       ),
       keyboardType: TextInputType.number,
-      onChanged: (String value) {
-        setState(() {
-          _priceValue = double.parse(value);
-        });
+      onSaved: (String value) {
+        _formData['price'] = double.parse(value);
       },
     );
   }
 
   void _submitForm() {
-    final Map<String, dynamic> product = {
-      'title': _titleValue,
-      'description': _descriptionValue,
-      'price': _priceValue,
-      'image': 'assets/img.JPG',
-    };
-    widget.addProduct(product);
+    if (!_formKey.currentState.validate()) {
+      //working with forms
+      return;
+    }
+    _formKey.currentState.save();
+
+    widget.addProduct(_formData);
     Navigator.pushReplacementNamed(context, '/products');
   }
 
@@ -73,25 +92,43 @@ class _ProductCreatPageState extends State<ProductCreatePage> {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 768.0 ? 500 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
-    return Container(
-      margin: EdgeInsets.all(10.0),
-      child: ListView(  //Scrollable
-        padding: EdgeInsets.symmetric(horizontal: targetPadding/2),      //landscape portrait when list view
-        children: <Widget>[
-          _buildTitleTextField(),
-          _buildTitleDescriptionField(),
-          _buildTitlePriceField(),
-          SizedBox(height: 10.0),
-          RaisedButton(
-            onPressed: _submitForm,
-            child: Text('Save'),
-            //color: Theme.of(context).accentColor,
-            textColor: Colors.white,
-          )
-        ],
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Container(
+        margin: EdgeInsets.all(10.0),
+        child: Form(
+          key: _formKey, //working with forms
+          child: ListView(
+            //Scrollable
+            padding: EdgeInsets.symmetric(
+                horizontal:
+                    targetPadding / 2), //landscape portrait when list view
+            children: <Widget>[
+              _buildTitleTextField(),
+              _buildTitleDescriptionField(),
+              _buildTitlePriceField(),
+              SizedBox(height: 10.0),
+              RaisedButton(
+                onPressed: _submitForm,
+                child: Text('Save'),
+                //color: Theme.of(context).accentColor,
+                textColor: Colors.white,
+              )
+
+              // GestureDetector(
+              //   onTap: _submitForm,
+              //   child: Container(
+              //     color: Colors.green,
+              //     padding: EdgeInsets.all(5.0),
+              //     child: Text('My Button'),
+              //   ),
+              // ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
-
-
