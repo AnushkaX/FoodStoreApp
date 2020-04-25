@@ -72,12 +72,11 @@ class _ProductCreatPageState extends State<ProductCreatePage> {
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 768.0 ? 500 : deviceWidth * 0.95;
-      
+    final double targetPadding = deviceWidth - targetWidth;
     return Container(
-      width: targetWidth,
       margin: EdgeInsets.all(10.0),
-      child: ListView(
-        //Scrollable
+      child: ListView(  //Scrollable
+        padding: EdgeInsets.symmetric(horizontal: targetPadding/2),      //landscape portrait when list view
         children: <Widget>[
           _buildTitleTextField(),
           _buildTitleDescriptionField(),

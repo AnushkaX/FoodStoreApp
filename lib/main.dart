@@ -36,6 +36,7 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.dark,
           primarySwatch: Colors.teal,
           accentColor: Colors.grey,
+          buttonColor: Colors.black,
           fontFamily: 'Tekton'),
       home: AuthPage(),               //'/' is a reserved name for home.
       routes: {
