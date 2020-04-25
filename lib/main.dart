@@ -30,6 +30,13 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _updateProduct(int index, Map<String, dynamic> product) {
+    setState(() {
+      _products[index] = product;
+    });
+
+  }
+
   Widget build(context) {
     var materialApp = MaterialApp(
       theme: ThemeData(
@@ -43,7 +50,7 @@ class _MyAppState extends State<MyApp> {
         //'/': (BuildContext context) => ProductsPage(_products),
         '/products' : (BuildContext context) => ProductsPage(_products),     //Products page
         '/admin': (BuildContext context) => 
-            ProductsAdminManager(_addProduct, _deleteProduct),              //manage products page
+            ProductsAdminManager(_addProduct,_updateProduct, _deleteProduct, _products),              //manage products page
         //setting route names
       },
       onGenerateRoute: (RouteSettings settings) {
