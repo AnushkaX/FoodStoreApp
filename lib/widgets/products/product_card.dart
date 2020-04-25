@@ -48,7 +48,7 @@ class ProductCard extends StatelessWidget {
                     ),
                 icon: Icon(Icons.favorite_border),
                 color: Colors.red, //Icon Color
-              ),
+              ), 
             ],
           );
   } 
