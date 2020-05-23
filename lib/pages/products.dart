@@ -6,24 +6,23 @@ import 'package:scoped_model/scoped_model.dart';
 //Home Page
 
 class ProductsPage extends StatefulWidget {
+  final MainModel model;
 
-final MainModel model;
+  ProductsPage(this.model);
 
-ProductsPage(this.model);
-
-@override
+  @override
   State<StatefulWidget> createState() {
-
     return _ProductPageState();
   }
 }
-class _ProductPageState extends State<ProductsPage> {
 
-@override
-initState() {       //executes when the class is called
-  widget.model.fetchProduct();
-  super.initState();
-}
+class _ProductPageState extends State<ProductsPage> {
+  @override
+  initState() {
+    //executes when the class is called
+    widget.model.fetchProduct();
+    super.initState();
+  }
 
   Widget _buildSideDrawer(BuildContext context) {
     return Drawer(
@@ -47,21 +46,17 @@ initState() {       //executes when the class is called
   }
 
   Widget _buildProductsList() {
-    return ScopedModelDescendant<MainModel>(builder:
-              (BuildContext context, Widget child, MainModel model) {
-                Widget content = Center(child: Text('No products'));
-                if (model.displayedProducts.length > 0 && !model.isLoading)
-                {
-                  content = Products();
-                }
-                else if (model.isLoading) {
-                  content = Center(child: CircularProgressIndicator());
-                }
+    return ScopedModelDescendant<MainModel>(
+        builder: (BuildContext context, Widget child, MainModel model) {
+      Widget content = Center(child: Text('No products'));
+      if (model.displayedProducts.length > 0 && !model.isLoading) {
+        content = Products();
+      } else if (model.isLoading) {
+        content = Center(child: CircularProgressIndicator());
+      }
 
-            return content;
-          });
-
-    
+      return RefreshIndicator(onRefresh: model.fetchProduct, child: content); //pull to reload
+    });
   }
 
   @override
@@ -72,10 +67,12 @@ initState() {       //executes when the class is called
       appBar: AppBar(
         title: Text("Food Store App"),
         actions: <Widget>[
-          ScopedModelDescendant<MainModel>(builder:
-              (BuildContext context, Widget child, MainModel model) {
+          ScopedModelDescendant<MainModel>(
+              builder: (BuildContext context, Widget child, MainModel model) {
             return IconButton(
-              icon: Icon(model.displayFavsOnly ? Icons.favorite : Icons.favorite_border), //fav button
+              icon: Icon(model.displayFavsOnly
+                  ? Icons.favorite
+                  : Icons.favorite_border), //fav button
               onPressed: () {
                 model.toggleDisplayMode();
               },
@@ -87,6 +84,4 @@ initState() {       //executes when the class is called
       body: _buildProductsList(),
     );
   }
-
-  
 }

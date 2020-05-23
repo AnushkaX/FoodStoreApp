@@ -29,34 +29,36 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildButtonBar(BuildContext context) {
-    return ButtonBar(
-      alignment: MainAxisAlignment.center,
-      children: <Widget>[
-        IconButton(
-          //details
-          onPressed: () => Navigator.pushNamed<bool>(
-              context, '/product/' + productIndex.toString()
-              //push will giva a bool
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                //details
+                onPressed: () => Navigator.pushNamed<bool>(
+                    context, '/product/' + model.allProducts[productIndex].id
+                    //push will giva a bool
+                    ),
+                icon: Icon(Icons.info),
+                color: Theme.of(context).accentColor,
+                //iconSize: ,
+                //child: Text('Details'))
               ),
-          icon: Icon(Icons.info),
-          color: Theme.of(context).accentColor,
-          //iconSize: ,
-          //child: Text('Details'))
-        ),
-        SizedBox(height: 10.0),
-        ScopedModelDescendant<MainModel>(
-            builder: (BuildContext context, Widget child, MainModel model) {
-          return IconButton(
-            //favorite button of a single product
-            icon: Icon(model.allProducts[productIndex].isFavorite ? Icons.favorite : Icons.favorite_border),
-            color: Colors.red, //Icon Color
-            onPressed: () {
-              model.selectProduct(productIndex);
-              model.toggleProductFavStatus();
-            },
-          );
-        })
-      ],
+              SizedBox(height: 10.0),
+              IconButton(
+                //favorite button of a single product
+                icon: Icon(model.allProducts[productIndex].isFavorite
+                    ? Icons.favorite
+                    : Icons.favorite_border),
+                color: Colors.red, //Icon Color
+                onPressed: () {
+                  model.selectProduct(model.allProducts[productIndex].id);
+                  model.toggleProductFavStatus();
+                },
+              ),
+            ]);
+      },
     );
   }
 
@@ -66,7 +68,12 @@ class ProductCard extends StatelessWidget {
       child: Column(
         children: <Widget>[
           //Allows to add array of objects
-          Image.network(product.image), //names given at product_control
+          FadeInImage(
+            image: NetworkImage(product.image),
+            height: 300.0,
+            fit: BoxFit.cover,
+            placeholder: AssetImage('assets/img.JPG'),
+          ), //names given at product_control
           //SizedBox(height: 10.0),
           _buildTitlePriceRow(),
           AddressTag(

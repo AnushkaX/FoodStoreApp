@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:helloworld/models/product.dart';
 import 'package:helloworld/pages/auth.dart';
 import 'package:helloworld/pages/product.dart';
 import 'package:helloworld/scoped-models/main.dart';
@@ -44,12 +45,14 @@ class _MyAppState extends State<MyApp> {
           }
 
           if (pathElements[1] == 'product') {
-            final int index = int.parse(pathElements[2]);
-
+            final String productId = pathElements[2];
+            final Product product = model.allProducts.firstWhere((Product product) {
+              return product.id == productId;
+            });
             return MaterialPageRoute<bool>(
               //how you navigate to a page
               builder: (BuildContext context) =>
-                  ProductPage(index),
+                  ProductPage(product),
             );
           }
           return null;

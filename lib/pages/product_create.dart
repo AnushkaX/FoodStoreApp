@@ -142,14 +142,31 @@ class _ProductCreatPageState extends State<ProductCreatePage> {
       return;
     }
     _formKey.currentState.save();
-    if (selectedProductIndex == null) {
+    if (selectedProductIndex == -1) {
       addProduct(
         _formData['title'],
         _formData['description'],
         _formData['image'],
         _formData['price'],
-      ).then((_) => Navigator.pushReplacementNamed(context, '/products')
-          .then((_) => setSelectedProduct(null)));
+      ).then((bool sucess) {
+        if (sucess) {
+          Navigator.pushReplacementNamed(context, '/products')
+              .then((_) => setSelectedProduct(null));
+        } else {
+          showDialog(context: context ,builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Something went wrong'),
+              content: Text('Please try again!'),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                )
+              ],
+            );
+          });
+        }
+      });
     } else {
       updateProduct(
         _formData['title'],
@@ -167,7 +184,7 @@ class _ProductCreatPageState extends State<ProductCreatePage> {
       builder: (BuildContext context, Widget child, MainModel model) {
         final Widget pageContent =
             _buildPageContent(context, model.selectedProduct);
-        return model.selectedProductIndex == null
+        return model.selectedProductIndex == -1
             ? pageContent
             : Scaffold(
                 appBar: AppBar(
