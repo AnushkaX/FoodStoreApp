@@ -5,7 +5,23 @@ import 'package:scoped_model/scoped_model.dart';
 
 //Product List Tab
 
-class ProductListPage extends StatelessWidget {
+class ProductListPage extends StatefulWidget {
+
+  final MainModel model;
+
+  ProductListPage(this.model);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ProductListPageState();
+  }
+}
+class _ProductListPageState extends State<ProductListPage> {
+  @override
+  initState() {
+    widget.model.fetchProduct();
+    super.initState();
+  }
 
   Widget _buildEditButton(BuildContext context, int index, MainModel model) {
         return IconButton(
@@ -46,7 +62,7 @@ class ProductListPage extends StatelessWidget {
             children: <Widget>[
               ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: AssetImage(model.allProducts[index].image),
+                  backgroundImage: NetworkImage(model.allProducts[index].image),
                 ),
                 title: Text(model.allProducts[index].title),
                 subtitle: Text('\$${model.allProducts[index].price.toString()}'),

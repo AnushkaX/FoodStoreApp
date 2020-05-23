@@ -19,8 +19,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
+    final MainModel model = MainModel();
     return ScopedModel<MainModel>(
-      model: MainModel(),       //^creates the instance and pass down to every class
+      model: model,       //^creates the instance and pass down to every class
       child: MaterialApp(
         theme: ThemeData(
             brightness: Brightness.dark,
@@ -31,9 +32,9 @@ class _MyAppState extends State<MyApp> {
         home: AuthPage(), //'/' is a reserved name for home.
         routes: {
           //'/': (BuildContext context) => ProductsPage(_products),
-          '/products': (BuildContext context) => ProductsPage(), //Products page
+          '/products': (BuildContext context) => ProductsPage(model), //Products page
           '/admin': (BuildContext context) =>
-              ProductsAdminManager(), //manage products page
+              ProductsAdminManager(model), //manage products page
           //setting route names
         },
         onGenerateRoute: (RouteSettings settings) {
@@ -55,7 +56,7 @@ class _MyAppState extends State<MyApp> {
         },
         onUnknownRoute: (RouteSettings settings) {
           return MaterialPageRoute(
-              builder: (BuildContext context) => ProductsPage());
+              builder: (BuildContext context) => ProductsPage(model));
         },
       ),
     );
