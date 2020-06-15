@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:helloworld/scoped-models/main.dart';
 import 'package:helloworld/widgets/products/products.dart';
+import 'package:helloworld/widgets/ui_elements.dart/logout_list_tile.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 //Home Page
@@ -39,7 +40,9 @@ class _ProductPageState extends State<ProductsPage> {
             onTap: () {
               Navigator.pushReplacementNamed(context, '/admin');
             },
-          )
+          ),
+          Divider(),
+          LogoutListTile(),
         ],
       ),
     );

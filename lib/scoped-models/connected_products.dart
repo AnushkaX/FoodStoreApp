@@ -1,9 +1,12 @@
+import 'package:helloworld/models/auth.dart';
 import 'package:helloworld/models/product.dart';
 import 'package:helloworld/models/user.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectedProducts extends Model {
   List<Product> _products = [];
@@ -26,14 +29,16 @@ class ConnectedProducts extends Model {
     };
 
     return http
-        .post('https://flutter-products-480c3.firebaseio.com/products.json',
+        .post(
+            'https://flutter-products-480c3.firebaseio.com/products.json?auth=${_authenticatedUser.token}',
             body: json.encode(productData))
-        .then((http.Response response) {          //can use async code also 
-          if(response.statusCode != 200 && response.statusCode != 201) {
-            _isLoading = false;
-            notifyListeners();
-            return false;
-          }
+        .then((http.Response response) {
+      //can use async code also
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
       final Map<String, dynamic> responseData = json.decode(response.body);
       final Product newProduct = Product(
           id: responseData['name'],
@@ -49,8 +54,8 @@ class ConnectedProducts extends Model {
       return true;
     }).catchError((error) {
       _isLoading = false;
-            notifyListeners();
-            return false;
+      notifyListeners();
+      return false;
     });
   }
 }
@@ -70,7 +75,7 @@ class ProductsModel extends ConnectedProducts {
     if (selectedProductId == null) {
       return null;
     }
-    return _products.firstWhere((Product product){
+    return _products.firstWhere((Product product) {
       return product.id == _selProductId;
     });
   }
@@ -90,8 +95,8 @@ class ProductsModel extends ConnectedProducts {
 
   int get selectedProductIndex {
     return _products.indexWhere((Product product) {
-            return product.id == _selProductId;
-          });
+      return product.id == _selProductId;
+    });
   }
 
   Future<bool> deleteProduct() {
@@ -102,15 +107,15 @@ class ProductsModel extends ConnectedProducts {
     notifyListeners();
     return http
         .delete(
-            'https://flutter-products-480c3.firebaseio.com/products/${deletedProductId}.json')
+            'https://flutter-products-480c3.firebaseio.com/products/${deletedProductId}.json?auth=${_authenticatedUser.token}')
         .then((http.Response response) {
       _isLoading = false;
       notifyListeners(); //live update
       return true;
     }).catchError((error) {
       _isLoading = false;
-            notifyListeners();
-            return false;
+      notifyListeners();
+      return false;
     });
   }
 
@@ -130,7 +135,7 @@ class ProductsModel extends ConnectedProducts {
     };
     return http
         .put(
-            'https://flutter-products-480c3.firebaseio.com/products/${selectedProduct.id}.json',
+            'https://flutter-products-480c3.firebaseio.com/products/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
             body: json.encode(updatedData))
         .then((http.Response response) {
       _isLoading = false;
@@ -142,16 +147,16 @@ class ProductsModel extends ConnectedProducts {
           price: price,
           userEmail: selectedProduct.userEmail,
           userID: selectedProduct.userID);
-          final int selectedProductIndex = _products.indexWhere((Product product) {
-            return product.id == _selProductId;
-          });
+      final int selectedProductIndex = _products.indexWhere((Product product) {
+        return product.id == _selProductId;
+      });
       _products[selectedProductIndex] = updatedProduct;
       notifyListeners(); //live update
       return true;
     }).catchError((error) {
       _isLoading = false;
-            notifyListeners();
-            return false;
+      notifyListeners();
+      return false;
     });
   }
 
@@ -164,7 +169,8 @@ class ProductsModel extends ConnectedProducts {
     _isLoading = true;
     notifyListeners();
     return http
-        .get('https://flutter-products-480c3.firebaseio.com/products.json')
+        .get(
+            'https://flutter-products-480c3.firebaseio.com/products.json?auth=${_authenticatedUser.token}')
         .then<Null>((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
@@ -191,8 +197,8 @@ class ProductsModel extends ConnectedProducts {
       _selProductId = null;
     }).catchError((error) {
       _isLoading = false;
-            notifyListeners();
-            return false;
+      notifyListeners();
+      return false;
     });
   }
 
@@ -221,8 +227,108 @@ class ProductsModel extends ConnectedProducts {
 }
 
 class UserModel extends ConnectedProducts {
-  void login(String email, String password) {
-    _authenticatedUser = User(id: 'Anussa', email: email, password: password);
+  Timer _authTimer;
+  PublishSubject<bool> _userSubject = PublishSubject();
+
+  User get user {
+    return _authenticatedUser;
+  }
+
+  PublishSubject<bool> get userSubject {
+    return _userSubject;
+
+  }
+
+  Future<Map<String, dynamic>> authenticate(String email, String password,
+      [AuthMode mode = AuthMode.Login]) async {
+    _isLoading = true;
+    notifyListeners();
+    final Map<String, dynamic> authData = {
+      'email': email,
+      'password': password,
+      'returnSecureToken': true
+    };
+    http.Response response;
+    if (mode == AuthMode.Login) {
+      response = await http.post(
+          'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBbtYiU_VMTVILpvnACy1H2UkVolPZFqxs',
+          body: json.encode(authData),
+          headers: {'Content-Type': 'application/json'});
+    } else {
+      response = await http.post(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBbtYiU_VMTVILpvnACy1H2UkVolPZFqxs",
+        body: json.encode(authData),
+        headers: {'Content-Type': 'application/json'},
+      );
+    }
+
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    bool hasError = true;
+    String message = 'Something wrong!';
+    if (responseData.containsKey('idToken')) {
+      hasError = false;
+      message = 'Authentication Succeeded!';
+      _authenticatedUser = User(
+          id: responseData['localId'],
+          email: email,
+          token: responseData['idToken']);
+      setAuthTimeout(int.parse(responseData['expiresIn']));
+      _userSubject.add(true);
+      final DateTime now = DateTime.now();
+      final DateTime expiryTime = now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      final SharedPreferences prefs =
+          await SharedPreferences.getInstance(); //saves the token in the device
+      prefs.setString('token', responseData['idToken']);
+      prefs.setString('userEmail', email);
+      prefs.setString('userId', responseData['localId']);
+      prefs.setString('expiryTime', expiryTime.toIso8601String());
+    } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
+      message = 'Email Not Found!';
+    } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
+      message = 'Incorrect Password!';
+    } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
+      message = 'Email Exists!';
+    }
+    _isLoading = false;
+    notifyListeners();
+    return {'success': !hasError, 'message': message};
+  }
+
+  void autoAuthenticate() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String token = prefs.getString('token');
+    final String expiryTimeS = prefs.getString('expiryTime');
+    if (token != null) {
+      final DateTime now = DateTime.now();
+      final parsedExpiryTime = DateTime.parse(expiryTimeS);
+      if(parsedExpiryTime.isBefore(now)) {
+        _authenticatedUser = null;
+        notifyListeners();
+        return;
+      }
+      final String userEmail = prefs.getString('userEmail');
+      final String userId = prefs.getString('userId');
+      final int lifeSpan = parsedExpiryTime.difference(now).inSeconds;
+      _userSubject.add(true);
+      _authenticatedUser = User(id: userId, email: userEmail, token: token);
+      setAuthTimeout(lifeSpan);
+      notifyListeners();
+    }
+  }
+
+  void logout() async {
+    _authenticatedUser = null;
+    _authTimer.cancel();
+    _userSubject.add(false);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+    prefs.remove('userEmail');
+    prefs.remove('userId');
+    
+  }
+
+  void setAuthTimeout(int time) {
+    _authTimer = Timer(Duration(seconds: time), logout);
   }
 }
 

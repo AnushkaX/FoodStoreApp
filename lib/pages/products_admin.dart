@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:helloworld/scoped-models/main.dart';
+import 'package:helloworld/widgets/ui_elements.dart/logout_list_tile.dart';
 import './product_create.dart';
 import './product_list.dart';
 
@@ -24,9 +25,11 @@ class ProductsAdminManager extends StatelessWidget {
             leading: Icon(Icons.shopping_basket),
             title: Text('All Products'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/products');
+              Navigator.pushReplacementNamed(context, '/');
             },
-          )
+          ),
+          Divider(),
+          LogoutListTile(),
         ],
       ),
     );
